@@ -1,0 +1,45 @@
+---
+driver:
+  name: vagrant
+  customize:
+    memory: 4096
+
+provisioner:
+  name: chef_zero
+
+platforms:
+  - name: centos-7.1
+    driver:
+      box: centos-71
+      box_url: gannett/centos-71
+      driver_config:
+      network:
+      - ["private_network", {ip: "33.33.33.10"}]
+
+suites:
+  - name: default
+    data_bags_path: test/integration/data_bags
+    run_list:
+      - recipe[gd-test-helper]
+      - recipe[dp_jenkins_master::default]
+    attributes:
+      gd-android-sdk:
+        keystores: ['test']
+      fake_databags:
+        - data_bag: 'users'
+          content:
+            id: 'jenkins'
+            key: "<%= ENV['GIT_SSH_KEY'] %>"
+            user.name: 'GannettBuild'
+            user.email: 'gannettbuild@gmail.com'
+        - data_bag: 's3cmd'
+          content:
+            id: 'dp-jenkins-master'
+            access-key: 'fake_primary_cert'
+            secret-key: 'fake_intermediate_cert'
+        - data_bag: 'android-sdk-keystores'
+          content:
+            id: 'test'
+            name: 'test'
+            data: 'SGVsbG8gd29ybGQh'
+            sha256: 'c0535e4be2b79ffd93291305436bf889314e4a3faec05ecffcbb7df31ad9e51a'
